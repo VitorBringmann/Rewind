@@ -3,5 +3,5 @@
 // (termina em /exec). Enquanto estiver vazia, o site roda em MODO DEMO:
 // usa as categorias do formulário copiadas no app.js e guarda os votos só no navegador.
 window.REWIND_CONFIG = {
-  SCRIPT_URL: "",
+  SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwnN9hFkkOnqj4dVdVGOkG8N7XMgjl9yAtwOh-AInkH7LUDUtmHTNcif8bTn8NE2ekl/exec",
 };
