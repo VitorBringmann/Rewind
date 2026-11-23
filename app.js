@@ -19,6 +19,8 @@
     { id: "10", categoria: "Quem seria um Hippie?", descricao: "Indique o sujeito da temporada que seria um Hippie na década de 70.", opcoes: [] },
   ];
 
+  const EMAIL_OK = /^[a-z0-9._%+-]+@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/i;
+
   const state = { cats: [], i: 0, answers: {}, nome: "", email: "" };
 
   /* ---------- Nav some ao rolar para baixo ---------- */
@@ -112,8 +114,12 @@
     e.preventDefault();
     state.nome = $("#in-nome").value.trim();
     state.email = $("#in-email").value.trim().toLowerCase();
-    if (!state.nome || !state.email) return;
-    if (!state.cats.length) return;
+    const msg = $("#id-msg");
+    const erro = (texto, campo) => { msg.textContent = texto; msg.className = "form-msg err"; campo.focus(); };
+    if (state.nome.length < 2) return erro("Escreva seu nome.", $("#in-nome"));
+    if (!EMAIL_OK.test(state.email)) return erro("Esse e-mail não parece válido. Confira se está no formato nome@dominio.com.", $("#in-email"));
+    msg.textContent = ""; msg.className = "form-msg";
+    if (!state.cats.length) return erro("As categorias ainda não carregaram. Recarregue a página.", $("#in-nome"));
     state.i = 0;
     state.editando = false;
     renderQ();
@@ -217,7 +223,15 @@
   /* ---------- Início ---------- */
   observe();
   loadCats()
-    .then((cats) => { state.cats = cats.filter((c) => c && c.categoria); renderGrid(); })
+    .then((cats) => {
+      const vistos = new Set();
+      state.cats = cats.filter((c) => {
+        if (!c || !c.categoria) return false;
+        const chave = c.categoria.trim().toLowerCase();
+        if (vistos.has(chave)) return false; // pergunta repetida no formulário aparece uma vez só
+        vistos.add(chave);
+        return true;
+      }); renderGrid(); })
     .catch((err) => {
       const g = $("#cat-grid"), li = document.createElement("li");
       li.textContent = "Não consegui ler o formulário agora (" + err.message + "). Recarregue a página em instantes.";

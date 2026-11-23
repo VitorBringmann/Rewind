@@ -272,3 +272,4 @@ img, svg { display: block; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   html { scroll-behavior: auto; }
 }
+#id-msg { margin: 0 0 14px; min-height: 0; }

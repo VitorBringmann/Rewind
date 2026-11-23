@@ -90,7 +90,7 @@
         <svg class="booth-bg" viewBox="0 0 800 800" aria-hidden="true"><use href="#art-sunburst" /></svg>
 
         <!-- Passo: identificação -->
-        <form class="card card-id" id="step-id" autocomplete="on">
+        <form class="card card-id" id="step-id" autocomplete="on" novalidate>
           <p class="card-kicker">Antes de tudo</p>
           <h3 class="card-title">Quem está votando?</h3>
           <label class="field">
@@ -101,6 +101,7 @@
             <span>E-mail <small>(uma resposta por e-mail)</small></span>
             <input type="email" name="email" id="in-email" required maxlength="120" placeholder="voce@exemplo.com" />
           </label>
+          <p class="form-msg" id="id-msg" role="status"></p>
           <button class="btn btn-pill" type="submit">Abrir a urna</button>
         </form>
 
