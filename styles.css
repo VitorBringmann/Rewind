@@ -253,7 +253,7 @@ img, svg { display: block; }
 .wobble, .groovy { text-shadow: 0 -.07em .25em rgba(232, 88, 42, .42), 0 -.16em .5em rgba(227, 167, 47, .32); }
 /* Com JS, cada palavra vira um SVG com o filtro de chama (funciona também no Safari do iPhone) */
 .fw { position: relative; display: inline-block; vertical-align: baseline; }
-.fw > .fw-txt { visibility: hidden; }
+.fw > .fw-txt { color: transparent; -webkit-text-stroke: 0 transparent; }
 .fw > svg { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
 /* brilho de brasa que tremula para cima, em passos irregulares */
 @keyframes flicker {

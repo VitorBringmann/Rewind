@@ -32,44 +32,62 @@
   }, { passive: true });
 
   /* ---------- Letras em chama ----------
-     Cada palavra desenhada é redesenhada num SVG com o filtro #flame.
-     Filtro dentro do próprio SVG é o que o Safari do iPhone renderiza bem. */
+     Cada palavra desenhada vira um SVG com filtro próprio, do tamanho da palavra:
+     o ruído sobe em loop e ondula as letras. O brilho é estático (sombra do texto
+     por trás), e só anima o que está na tela, para rodar leve no celular. */
   const SVGNS = "http://www.w3.org/2000/svg";
+  const TW = 320, TH = 80; // múltiplos do período do ruído, para o loop emendar
   const flameEls = [...document.querySelectorAll(".wobble, .groovy")];
   flameEls.forEach((el) => { el.dataset.txt = el.textContent; el.setAttribute("aria-label", el.textContent); });
 
+  let nFiltro = 0;
+  const visiveis = new IntersectionObserver((es) => es.forEach((e) => {
+    const svg = e.target;
+    if (svg.pauseAnimations) e.isIntersecting ? svg.unpauseAnimations() : svg.pauseAnimations();
+  }), { rootMargin: "80px" });
+
   function flameify() {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    visiveis.disconnect();
     flameEls.forEach((el) => {
       el.textContent = "";
-      const palavras = el.dataset.txt.split(/(\s+)/);
       const wraps = [];
-      palavras.forEach((p) => {
+      el.dataset.txt.split(/(\s+)/).forEach((p) => {
         if (!p) return;
         if (/^\s+$/.test(p)) { el.append(" "); return; }
         const w = document.createElement("span");
         w.className = "fw"; w.setAttribute("aria-hidden", "true");
         const t = document.createElement("span");
         t.className = "fw-txt"; t.textContent = p;
-        const marca = document.createElement("span"); // marca a linha de base
+        const marca = document.createElement("span");
         marca.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline";
         w.append(marca, t);
         el.appendChild(w);
-        wraps.push([w, t, marca, p]);
+        wraps.push([w, marca, p]);
       });
       const cs = getComputedStyle(el);
       const contorno = parseFloat(cs.webkitTextStrokeWidth) || 0;
-      wraps.forEach(([w, t, marca, p]) => {
+      wraps.forEach(([w, marca, p]) => {
         const r = w.getBoundingClientRect();
+        const W = Math.ceil(r.width), H = Math.ceil(r.height);
         const base = marca.getBoundingClientRect().top - r.top;
+        const id = "fl" + (++nFiltro);
+        const fh = Math.max(H + 36, 2 * TH + 20);
         const svg = document.createElementNS(SVGNS, "svg");
-        svg.setAttribute("width", Math.ceil(r.width));
-        svg.setAttribute("height", Math.ceil(r.height));
+        svg.setAttribute("width", W); svg.setAttribute("height", H);
         svg.setAttribute("aria-hidden", "true");
+        svg.innerHTML =
+          `<defs><filter id="${id}" filterUnits="userSpaceOnUse" x="-14" y="-18" width="${W + 28}" height="${fh}" color-interpolation-filters="sRGB">` +
+          `<feTurbulence type="fractalNoise" baseFrequency="0.0125 0.025" numOctaves="2" seed="11" stitchTiles="stitch" x="0" y="0" width="${TW}" height="${TH}" result="n"/>` +
+          `<feTile in="n" result="t"/>` +
+          `<feOffset in="t" dx="0" dy="0" x="0" y="0" width="${TW}" height="${TH}" result="o">` +
+          `<animate attributeName="dy" from="0" to="-${TH}" dur="2s" repeatCount="indefinite"/></feOffset>` +
+          `<feTile in="o" result="t2"/>` +
+          `<feDisplacementMap in="SourceGraphic" in2="t2" scale="16" xChannelSelector="R" yChannelSelector="G"/>` +
+          `</filter></defs>`;
         const tx = document.createElementNS(SVGNS, "text");
-        tx.setAttribute("x", "0");
-        tx.setAttribute("y", String(base));
-        tx.setAttribute("filter", "url(#flame)");
+        tx.setAttribute("x", "0"); tx.setAttribute("y", String(base));
+        tx.setAttribute("filter", `url(#${id})`);
         tx.textContent = p;
         tx.style.font = cs.fontStyle + " " + cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
         tx.style.letterSpacing = cs.letterSpacing;
@@ -82,11 +100,14 @@
         }
         svg.appendChild(tx);
         w.appendChild(svg);
+        visiveis.observe(svg);
       });
-      el.style.textShadow = "none";
     });
   }
-  const iniciarChama = () => { try { flameify(); } catch (_) { flameEls.forEach((el) => { el.textContent = el.dataset.txt; el.style.textShadow = ""; }); } };
+  const iniciarChama = () => {
+    try { flameify(); }
+    catch (_) { flameEls.forEach((el) => { el.textContent = el.dataset.txt; }); }
+  };
   (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(iniciarChama);
   let largura = innerWidth, tmr;
   addEventListener("resize", () => {
