@@ -43,8 +43,21 @@
     if (ch) ch.ativa = e.isIntersecting;
   }));
 
+  // iPhone/iPad: chama desligada até confirmarmos o que o Safari aceita (abra com #chama para testar)
+  const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const DEBUG = location.hash === "#chama";
+  const log = (m) => {
+    if (!DEBUG) return;
+    let box = document.getElementById("dbg");
+    if (!box) { box = document.createElement("pre"); box.id = "dbg"; box.style.cssText = "position:fixed;left:8px;right:8px;bottom:8px;z-index:999;max-height:40vh;overflow:auto;background:#2b1a10;color:#f3e7cc;font:12px/1.4 monospace;padding:10px;border-radius:12px;white-space:pre-wrap"; document.body.appendChild(box); }
+    box.textContent += m + "\n";
+  };
+  addEventListener("error", (e) => log("ERRO: " + e.message + " @" + e.lineno));
+
   function flameify() {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (IOS && !DEBUG) return;
+    log("UA: " + navigator.userAgent + " | dpr " + devicePixelRatio);
     visiveis.disconnect(); chamas = [];
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     flameEls.forEach((el) => {
@@ -96,6 +109,7 @@
         w.appendChild(cv);
         const ch = { cv, ctx: cv.getContext("2d"), src, W, H, dpr, ativa: true, fase: Math.random() * 10 };
         chamas.push(ch);
+        log(p + ": " + W + "x" + H + " base " + base.toFixed(1) + " cor " + cs.color + " fonte " + fonte);
         visiveis.observe(cv);
         desenha(ch, 0);
       });
@@ -110,20 +124,22 @@
       const topo = 1 - y / H; // mais movimento no alto, como chama
       const k = ch.fase + t;
       const dx = (Math.sin(y * 0.09 + k * 2.2) * 0.6 + Math.sin(y * 0.21 + k * 3.7) * 0.4) * (2 + 4 * topo);
-      ctx.drawImage(src, 0, y * dpr, W * dpr, fatia * dpr, dx * dpr, y * dpr, W * dpr, fatia * dpr);
+      const h = Math.min(fatia, H - y); // não pede fatia além da borda (o Safari recusa)
+      ctx.drawImage(src, 0, y * dpr, W * dpr, h * dpr, dx * dpr, y * dpr, W * dpr, h * dpr);
     }
   }
 
   let t0 = performance.now();
   (function loop(now) {
     const t = (now - t0) / 1000 * 0.6; // velocidade calma
-    for (const ch of chamas) if (ch.ativa) desenha(ch, t);
+    try { for (const ch of chamas) if (ch.ativa) desenha(ch, t); }
+    catch (err) { log("desenho: " + err.message); chamas = []; }
     requestAnimationFrame(loop);
   })(t0);
 
   const iniciarChama = () => {
-    try { flameify(); }
-    catch (_) { chamas = []; flameEls.forEach((el) => { el.textContent = el.dataset.txt; }); }
+    try { flameify(); log("ok: " + chamas.length + " canvas"); }
+    catch (err) { log("falhou: " + err.message); chamas = []; flameEls.forEach((el) => { el.textContent = el.dataset.txt; }); }
   };
   (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(iniciarChama);
   let largura = innerWidth, tmr;
