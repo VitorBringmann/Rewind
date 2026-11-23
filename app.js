@@ -31,6 +31,70 @@
     lastY = y;
   }, { passive: true });
 
+  /* ---------- Letras em chama ----------
+     Cada palavra desenhada é redesenhada num SVG com o filtro #flame.
+     Filtro dentro do próprio SVG é o que o Safari do iPhone renderiza bem. */
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const flameEls = [...document.querySelectorAll(".wobble, .groovy")];
+  flameEls.forEach((el) => { el.dataset.txt = el.textContent; el.setAttribute("aria-label", el.textContent); });
+
+  function flameify() {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    flameEls.forEach((el) => {
+      el.textContent = "";
+      const palavras = el.dataset.txt.split(/(\s+)/);
+      const wraps = [];
+      palavras.forEach((p) => {
+        if (!p) return;
+        if (/^\s+$/.test(p)) { el.append(" "); return; }
+        const w = document.createElement("span");
+        w.className = "fw"; w.setAttribute("aria-hidden", "true");
+        const t = document.createElement("span");
+        t.className = "fw-txt"; t.textContent = p;
+        const marca = document.createElement("span"); // marca a linha de base
+        marca.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline";
+        w.append(marca, t);
+        el.appendChild(w);
+        wraps.push([w, t, marca, p]);
+      });
+      const cs = getComputedStyle(el);
+      const contorno = parseFloat(cs.webkitTextStrokeWidth) || 0;
+      wraps.forEach(([w, t, marca, p]) => {
+        const r = w.getBoundingClientRect();
+        const base = marca.getBoundingClientRect().top - r.top;
+        const svg = document.createElementNS(SVGNS, "svg");
+        svg.setAttribute("width", Math.ceil(r.width));
+        svg.setAttribute("height", Math.ceil(r.height));
+        svg.setAttribute("aria-hidden", "true");
+        const tx = document.createElementNS(SVGNS, "text");
+        tx.setAttribute("x", "0");
+        tx.setAttribute("y", String(base));
+        tx.setAttribute("filter", "url(#flame)");
+        tx.textContent = p;
+        tx.style.font = cs.fontStyle + " " + cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
+        tx.style.letterSpacing = cs.letterSpacing;
+        tx.style.fill = cs.color;
+        if (contorno) {
+          tx.style.stroke = cs.webkitTextStrokeColor;
+          tx.style.strokeWidth = contorno * 2 + "px";
+          tx.style.paintOrder = "stroke fill";
+          tx.style.strokeLinejoin = "round";
+        }
+        svg.appendChild(tx);
+        w.appendChild(svg);
+      });
+      el.style.textShadow = "none";
+    });
+  }
+  const iniciarChama = () => { try { flameify(); } catch (_) { flameEls.forEach((el) => { el.textContent = el.dataset.txt; el.style.textShadow = ""; }); } };
+  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(iniciarChama);
+  let largura = innerWidth, tmr;
+  addEventListener("resize", () => {
+    if (innerWidth === largura) return; // ignora a barra do navegador do celular
+    largura = innerWidth;
+    clearTimeout(tmr); tmr = setTimeout(iniciarChama, 200);
+  });
+
   /* ---------- Revelação e contadores ---------- */
   const io = new IntersectionObserver((entries) => {
     entries.forEach((e) => {

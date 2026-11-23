@@ -237,13 +237,18 @@
       </symbol>
 
       <!-- Chama: ruído que sobe sem parar e ondula as letras como calor de fogo -->
-      <filter id="flame" filterUnits="userSpaceOnUse" x="-60" y="-260" width="3200" height="900" color-interpolation-filters="sRGB">
+      <filter id="flame" filterUnits="userSpaceOnUse" x="-40" y="-60" width="1500" height="560" color-interpolation-filters="sRGB">
         <feTurbulence type="fractalNoise" baseFrequency="0.0125 0.025" numOctaves="2" seed="11" stitchTiles="stitch" x="0" y="0" width="240" height="240" result="noise" />
         <feTile in="noise" result="tiled" />
         <feOffset in="tiled" dx="0" dy="0" result="rising">
           <animate attributeName="dy" from="0" to="-240" dur="6s" repeatCount="indefinite" />
         </feOffset>
-        <feDisplacementMap in="SourceGraphic" in2="rising" scale="16" xChannelSelector="R" yChannelSelector="G" />
+        <feDisplacementMap in="SourceGraphic" in2="rising" scale="16" xChannelSelector="R" yChannelSelector="G" result="fogo" />
+        <feGaussianBlur in="fogo" stdDeviation="9" result="borrao" />
+        <feFlood flood-color="#e8582a" flood-opacity=".45" />
+        <feComposite in2="borrao" operator="in" result="brilho" />
+        <feOffset in="brilho" dy="-5" result="brilho2" />
+        <feMerge><feMergeNode in="brilho2" /><feMergeNode in="fogo" /></feMerge>
       </filter>
     </defs>
   </svg>
