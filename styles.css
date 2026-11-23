@@ -273,3 +273,8 @@ img, svg { display: block; }
   html { scroll-behavior: auto; }
 }
 #id-msg { margin: 0 0 14px; min-height: 0; }
+@media (max-width: 480px) {
+  .q-nav { flex-direction: column; align-items: stretch; }
+  .q-nav .btn { width: 100%; }
+  .q-nav .btn-pill { order: -1; margin-left: 0; }
+}
