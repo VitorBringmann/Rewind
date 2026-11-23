@@ -46,18 +46,19 @@ function doPost(e) {
     if (!votos.length) throw new Error('Nenhuma indicação enviada');
 
     const form = FormApp.getActiveForm();
-    const itemEmail = acharItem_(form, TITULO_EMAIL);
+    const itemEmail = itemPorId_(form, body.idEmail) || acharItem_(form, ehEmail_);
     if (!itemEmail) throw new Error('O formulário precisa de uma pergunta "' + TITULO_EMAIL + '"');
     if (emailJaRespondeu_(form, itemEmail, email)) throw new Error('Este e-mail já enviou uma resposta');
 
     const resp = form.createResponse();
-    resp.withItemResponse(itemEmail.asTextItem().createResponse(email));
-    const itemNome = acharItem_(form, TITULO_NOME);
-    if (itemNome) resp.withItemResponse(itemNome.asTextItem().createResponse(nome));
+    resp.withItemResponse(responder_(itemEmail, email));
+    const itemNome = itemPorId_(form, body.idNome) || acharItem_(form, ehNome_);
+    if (itemNome) resp.withItemResponse(responder_(itemNome, nome));
 
     let gravados = 0;
     votos.forEach(v => {
       const item = form.getItemById(Number(v.id));
+      if (item && (item.getId() === itemEmail.getId() || (itemNome && item.getId() === itemNome.getId()))) return;
       const valor = limpar_(v.resposta, 300);
       if (!item || !valor || TIPOS_ACEITOS.indexOf(item.getType()) === -1) return;
       resp.withItemResponse(responder_(item, valor));
@@ -74,10 +75,9 @@ function doPost(e) {
 }
 
 function lerCategorias_() {
-  const ignorar = [TITULO_EMAIL, TITULO_NOME].map(normalizar_);
   return FormApp.getActiveForm().getItems()
     .filter(it => TIPOS_ACEITOS.indexOf(it.getType()) !== -1)
-    .filter(it => ignorar.indexOf(normalizar_(it.getTitle())) === -1)
+    .filter(it => !ehEmail_(it.getTitle()) && !ehNome_(it.getTitle()))
     .map(it => ({
       id: String(it.getId()),
       categoria: it.getTitle(),
@@ -102,9 +102,25 @@ function responder_(item, valor) {
   }
 }
 
-function acharItem_(form, titulo) {
-  const alvo = normalizar_(titulo);
-  return form.getItems().filter(it => normalizar_(it.getTitle()) === alvo)[0] || null;
+// Aceita variações do título: "E-mail", "Email", "Seu e-mail", "Nome", "Nome completo", "Qual seu nome?"…
+function tituloLimpo_(t) {
+  return normalizar_(t).replace(/[^a-z0-9 -]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function ehEmail_(t) { return /^(qual )?(e )?(o )?(seu )?(endereco de )?e-? ?mail( \w+)?$/.test(tituloLimpo_(t)); }
+function ehNome_(t) { return /^(qual )?(e )?(o )?(seu )?nome( completo| e sobrenome)?$/.test(tituloLimpo_(t)); }
+
+function acharItem_(form, teste) {
+  return form.getItems()
+    .filter(it => [FormApp.ItemType.TEXT, FormApp.ItemType.PARAGRAPH_TEXT].indexOf(it.getType()) !== -1)
+    .filter(it => teste(it.getTitle()))[0] || null;
+}
+
+function itemPorId_(form, id) {
+  if (!id) return null;
+  try {
+    const it = form.getItemById(Number(id));
+    return it && [FormApp.ItemType.TEXT, FormApp.ItemType.PARAGRAPH_TEXT].indexOf(it.getType()) !== -1 ? it : null;
+  } catch (e) { return null; }
 }
 
 function emailJaRespondeu_(form, itemEmail, email) {

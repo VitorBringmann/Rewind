@@ -293,7 +293,7 @@
     btn.disabled = true; btn.textContent = "Enviando…";
     msg.className = "form-msg"; msg.textContent = "";
     try {
-      const r = await sendVotes({ nome: state.nome, email: state.email, votos, origem: location.href });
+      const r = await sendVotes({ nome: state.nome, email: state.email, idNome: state.idNome, idEmail: state.idEmail, votos, origem: location.href });
       if (!r || !r.ok) throw new Error((r && r.erro) || "Falha ao registrar");
       $("#done-name").textContent = state.nome;
       show("done");
@@ -305,6 +305,14 @@
     }
   });
 
+  /* ---------- Perguntas de identificação do formulário ---------- */
+  function tituloLimpo(t) {
+    return String(t || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9 -]/g, " ").replace(/\s+/g, " ").trim();
+  }
+  function ehEmail(t) { return /^(qual )?(e )?(o )?(seu )?(endereco de )?e-? ?mail( \w+)?$/.test(tituloLimpo(t)); }
+  function ehNome(t) { return /^(qual )?(e )?(o )?(seu )?nome( completo| e sobrenome)?$/.test(tituloLimpo(t)); }
+
   /* ---------- Início ---------- */
   observe();
   loadCats()
@@ -312,6 +320,9 @@
       const vistos = new Set();
       state.cats = cats.filter((c) => {
         if (!c || !c.categoria) return false;
+        // Nome e E-mail são respondidos no cartão "Antes de tudo", não na urna
+        if (ehEmail(c.categoria)) { state.idEmail = state.idEmail || c.id; return false; }
+        if (ehNome(c.categoria)) { state.idNome = state.idNome || c.id; return false; }
         const chave = c.categoria.trim().toLowerCase();
         if (vistos.has(chave)) return false; // pergunta repetida no formulário aparece uma vez só
         vistos.add(chave);
