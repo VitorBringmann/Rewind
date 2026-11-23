@@ -32,34 +32,23 @@
   }, { passive: true });
 
   /* ---------- Letras em chama ----------
-     Cada palavra desenhada é pintada num <canvas> e redesenhada em fatias horizontais
-     que ondulam subindo, como o ar quente de uma fogueira. Canvas funciona igual em
-     todos os navegadores (inclusive Safari do iPhone) e só anima o que está na tela. */
+     Cada palavra desenhada vira um SVG com filtro próprio, do tamanho da palavra:
+     o ruído sobe em loop e ondula as letras. O brilho é estático (sombra do texto
+     por trás), e só anima o que está na tela, para rodar leve no celular. */
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const TW = 320, TH = 80; // múltiplos do período do ruído, para o loop emendar
   const flameEls = [...document.querySelectorAll(".wobble, .groovy")];
   flameEls.forEach((el) => { el.dataset.txt = el.textContent; el.setAttribute("aria-label", el.textContent); });
-  let chamas = [];
-  const visiveis = new IntersectionObserver((es) => es.forEach((e) => {
-    const ch = chamas.find((c) => c.cv === e.target);
-    if (ch) ch.ativa = e.isIntersecting;
-  }));
 
-  // iPhone/iPad: chama desligada até confirmarmos o que o Safari aceita (abra com #chama para testar)
-  const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  const DEBUG = location.hash === "#chama";
-  const log = (m) => {
-    if (!DEBUG) return;
-    let box = document.getElementById("dbg");
-    if (!box) { box = document.createElement("pre"); box.id = "dbg"; box.style.cssText = "position:fixed;left:8px;right:8px;bottom:8px;z-index:999;max-height:40vh;overflow:auto;background:#2b1a10;color:#f3e7cc;font:12px/1.4 monospace;padding:10px;border-radius:12px;white-space:pre-wrap"; document.body.appendChild(box); }
-    box.textContent += m + "\n";
-  };
-  addEventListener("error", (e) => log("ERRO: " + e.message + " @" + e.lineno));
+  let nFiltro = 0;
+  const visiveis = new IntersectionObserver((es) => es.forEach((e) => {
+    const svg = e.target;
+    if (svg.pauseAnimations) e.isIntersecting ? svg.unpauseAnimations() : svg.pauseAnimations();
+  }), { rootMargin: "80px" });
 
   function flameify() {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    if (IOS && !DEBUG) return;
-    log("UA: " + navigator.userAgent + " | dpr " + devicePixelRatio);
-    visiveis.disconnect(); chamas = [];
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    visiveis.disconnect();
     flameEls.forEach((el) => {
       el.textContent = "";
       const wraps = [];
@@ -78,68 +67,46 @@
       });
       const cs = getComputedStyle(el);
       const contorno = parseFloat(cs.webkitTextStrokeWidth) || 0;
-      const fonte = cs.fontStyle + " " + cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
       wraps.forEach(([w, marca, p]) => {
         const r = w.getBoundingClientRect();
-        const PAD = 16;
-        const W = Math.ceil(r.width) + PAD * 2, H = Math.ceil(r.height) + PAD;
-        const base = marca.getBoundingClientRect().top - r.top + PAD / 2;
-        // texto parado, desenhado uma vez
-        const src = document.createElement("canvas");
-        src.width = W * dpr; src.height = H * dpr;
-        const sx = src.getContext("2d");
-        sx.scale(dpr, dpr);
-        sx.font = fonte; sx.textBaseline = "alphabetic";
-        if ("letterSpacing" in sx) sx.letterSpacing = cs.letterSpacing;
+        const W = Math.ceil(r.width), H = Math.ceil(r.height);
+        const base = marca.getBoundingClientRect().top - r.top;
+        const id = "fl" + (++nFiltro);
+        const fh = Math.max(H + 36, 2 * TH + 20);
+        const svg = document.createElementNS(SVGNS, "svg");
+        svg.setAttribute("width", W); svg.setAttribute("height", H);
+        svg.setAttribute("aria-hidden", "true");
+        svg.innerHTML =
+          `<defs><filter id="${id}" filterUnits="userSpaceOnUse" x="-14" y="-18" width="${W + 28}" height="${fh}" color-interpolation-filters="sRGB">` +
+          `<feTurbulence type="fractalNoise" baseFrequency="0.0125 0.025" numOctaves="2" seed="11" stitchTiles="stitch" x="0" y="0" width="${TW}" height="${TH}" result="n"/>` +
+          `<feTile in="n" result="t"/>` +
+          `<feOffset in="t" dx="0" dy="0" x="0" y="0" width="${TW}" height="${TH}" result="o">` +
+          `<animate attributeName="dy" from="0" to="-${TH}" dur="2s" repeatCount="indefinite"/></feOffset>` +
+          `<feTile in="o" result="t2"/>` +
+          `<feDisplacementMap in="SourceGraphic" in2="t2" scale="16" xChannelSelector="R" yChannelSelector="G"/>` +
+          `</filter></defs>`;
+        const tx = document.createElementNS(SVGNS, "text");
+        tx.setAttribute("x", "0"); tx.setAttribute("y", String(base));
+        tx.setAttribute("filter", `url(#${id})`);
+        tx.textContent = p;
+        tx.style.font = cs.fontStyle + " " + cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
+        tx.style.letterSpacing = cs.letterSpacing;
+        tx.style.fill = cs.color;
         if (contorno) {
-          sx.lineJoin = "round"; sx.lineWidth = contorno * 2; sx.strokeStyle = cs.webkitTextStrokeColor;
-          sx.strokeText(p, PAD, base);
+          tx.style.stroke = cs.webkitTextStrokeColor;
+          tx.style.strokeWidth = contorno * 2 + "px";
+          tx.style.paintOrder = "stroke fill";
+          tx.style.strokeLinejoin = "round";
         }
-        sx.fillStyle = cs.color; sx.fillText(p, PAD, base);
-        // confere se o texto foi mesmo desenhado; se não, mantém o texto normal
-        const amostra = sx.getImageData(0, 0, src.width, src.height).data;
-        let pintou = false;
-        for (let i = 3; i < amostra.length; i += 64) if (amostra[i] > 0) { pintou = true; break; }
-        if (!pintou) throw new Error("canvas vazio");
-        // canvas visível, onde a chama é desenhada
-        const cv = document.createElement("canvas");
-        cv.width = W * dpr; cv.height = H * dpr;
-        cv.style.cssText = `position:absolute;left:${-PAD}px;top:${-PAD / 2}px;width:${W}px;height:${H}px;pointer-events:none`;
-        cv.setAttribute("aria-hidden", "true");
-        w.appendChild(cv);
-        const ch = { cv, ctx: cv.getContext("2d"), src, W, H, dpr, ativa: true, fase: Math.random() * 10 };
-        chamas.push(ch);
-        log(p + ": " + W + "x" + H + " base " + base.toFixed(1) + " cor " + cs.color + " fonte " + fonte);
-        visiveis.observe(cv);
-        desenha(ch, 0);
+        svg.appendChild(tx);
+        w.appendChild(svg);
+        visiveis.observe(svg);
       });
     });
   }
-
-  function desenha(ch, t) {
-    const { ctx, src, W, H, dpr } = ch;
-    const fatia = 2; // px de altura de cada faixa
-    ctx.clearRect(0, 0, W * dpr, H * dpr);
-    for (let y = 0; y < H; y += fatia) {
-      const topo = 1 - y / H; // mais movimento no alto, como chama
-      const k = ch.fase + t;
-      const dx = (Math.sin(y * 0.09 + k * 2.2) * 0.6 + Math.sin(y * 0.21 + k * 3.7) * 0.4) * (2 + 4 * topo);
-      const h = Math.min(fatia, H - y); // não pede fatia além da borda (o Safari recusa)
-      ctx.drawImage(src, 0, y * dpr, W * dpr, h * dpr, dx * dpr, y * dpr, W * dpr, h * dpr);
-    }
-  }
-
-  let t0 = performance.now();
-  (function loop(now) {
-    const t = (now - t0) / 1000 * 0.6; // velocidade calma
-    try { for (const ch of chamas) if (ch.ativa) desenha(ch, t); }
-    catch (err) { log("desenho: " + err.message); chamas = []; }
-    requestAnimationFrame(loop);
-  })(t0);
-
   const iniciarChama = () => {
-    try { flameify(); log("ok: " + chamas.length + " canvas"); }
-    catch (err) { log("falhou: " + err.message); chamas = []; flameEls.forEach((el) => { el.textContent = el.dataset.txt; }); }
+    try { flameify(); }
+    catch (_) { flameEls.forEach((el) => { el.textContent = el.dataset.txt; }); }
   };
   (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(iniciarChama);
   let largura = innerWidth, tmr;
