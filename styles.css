@@ -40,6 +40,9 @@ img, svg { display: block; }
 .flower-core { fill: var(--mustard); stroke: var(--ink); stroke-width: 4; }
 .flower-dot { fill: var(--ink); }
 
+/* Sóis giratórios: desenhados como imagem (rasterizada uma vez) e girados na GPU */
+.sun-img { aspect-ratio: 1; max-width: none; background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800"%3E%3Cg transform="translate(400 400)"%3E %3Cpath d="M0 0 L-60 -420 L60 -420Z" fill="%23e8582a" /%3E %3Cpath d="M0 0 L-60 -420 L60 -420Z" fill="%23e3a72f" transform="rotate(20)" /%3E %3Cpath d="M0 0 L-60 -420 L60 -420Z" fill="%232a8c9a" transform="rotate(40)" /%3E %3Cpath d="M0 0 L-60 -420 L60 -420Z" fill="%23c8312a" transform="rotate(60)" /%3E %3Cpath d="M0 0 L-60 -420 L60 -420Z" fill="%237a9a3a" transform="rotate(80)" /%3E %3Cpath d="M0 0 L-60 -420 L60 -420Z" fill="%235a2d5e" transform="rotate(100)" /%3E %3Cpath d="M0 0 L-60 -420 L60 -420Z" fill="%23e8582a" transform="rotate(120)" /%3E %3Cpath d="M0 0 L-60 -420 L60 -420Z" fill="%23e3a72f" transform="rotate(140)" /%3E %3Cpath d="M0 0 L-60 -420 L60 -420Z" fill="%232a8c9a" transform="rotate(160)" /%3E %3Cpath d="M0 0 L-60 -420 L60 -420Z" fill="%23c8312a" transform="rotate(180)" /%3E %3Cpath d="M0 0 L-60 -420 L60 -420Z" fill="%237a9a3a" transform="rotate(200)" /%3E %3Cpath d="M0 0 L-60 -420 L60 -420Z" fill="%235a2d5e" transform="rotate(220)" /%3E %3Cpath d="M0 0 L-60 -420 L60 -420Z" fill="%23e8582a" transform="rotate(240)" /%3E %3Cpath d="M0 0 L-60 -420 L60 -420Z" fill="%23e3a72f" transform="rotate(260)" /%3E %3Cpath d="M0 0 L-60 -420 L60 -420Z" fill="%232a8c9a" transform="rotate(280)" /%3E %3Cpath d="M0 0 L-60 -420 L60 -420Z" fill="%23c8312a" transform="rotate(300)" /%3E %3Cpath d="M0 0 L-60 -420 L60 -420Z" fill="%237a9a3a" transform="rotate(320)" /%3E %3Cpath d="M0 0 L-60 -420 L60 -420Z" fill="%235a2d5e" transform="rotate(340)" /%3E %3C/g%3E%3C/svg%3E') center / contain no-repeat; will-change: transform; }
+
 /* ---------- Nav ---------- */
 .nav {
   position: fixed; top: 12px; left: var(--gutter); right: var(--gutter); z-index: 50;
@@ -264,6 +267,9 @@ img, svg { display: block; }
   58%  { text-shadow: 0 -.06em .22em rgba(232, 88, 42, .38), 0 -.14em .44em rgba(227, 167, 47, .28); }
   72%  { text-shadow: 0 -.09em .28em rgba(232, 88, 42, .48), 0 -.2em .56em rgba(227, 167, 47, .38); }
   86%  { text-shadow: 0 -.05em .2em rgba(232, 88, 42, .33), 0 -.11em .4em rgba(227, 167, 47, .24); }
+}
+@media (hover: none), (max-width: 760px) {
+  .nav { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--cream); }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 .hero-sun { animation-name: spin-y; }

@@ -40,11 +40,12 @@
   const flameEls = [...document.querySelectorAll(".wobble, .groovy")];
   flameEls.forEach((el) => { el.dataset.txt = el.textContent; el.setAttribute("aria-label", el.textContent); });
 
+  const LEVE = matchMedia("(hover: none)").matches; // celular: ruído mais simples
   let nFiltro = 0;
   const visiveis = new IntersectionObserver((es) => es.forEach((e) => {
     const svg = e.target;
     if (svg.pauseAnimations) e.isIntersecting ? svg.unpauseAnimations() : svg.pauseAnimations();
-  }), { rootMargin: "80px" });
+  }), { rootMargin: "0px" });
 
   function flameify() {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -78,7 +79,7 @@
         svg.setAttribute("aria-hidden", "true");
         svg.innerHTML =
           `<defs><filter id="${id}" filterUnits="userSpaceOnUse" x="-14" y="-18" width="${W + 28}" height="${fh}" color-interpolation-filters="sRGB">` +
-          `<feTurbulence type="fractalNoise" baseFrequency="0.0125 0.025" numOctaves="2" seed="11" stitchTiles="stitch" x="0" y="0" width="${TW}" height="${TH}" result="n"/>` +
+          `<feTurbulence type="fractalNoise" baseFrequency="0.0125 0.025" numOctaves="${LEVE ? 1 : 2}" seed="11" stitchTiles="stitch" x="0" y="0" width="${TW}" height="${TH}" result="n"/>` +
           `<feTile in="n" result="t"/>` +
           `<feOffset in="t" dx="0" dy="0" x="0" y="0" width="${TW}" height="${TH}" result="o">` +
           `<animate attributeName="dy" from="0" to="-${TH}" dur="2s" repeatCount="indefinite"/></feOffset>` +
