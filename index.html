@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rewind Awards</title>
+  <meta name="description" content="Os prêmios da temporada. Indique quem marcou o ano." />
+  <meta name="theme-color" content="#f3e7cc" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Shrikhand&family=Righteous&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='44' fill='%23e8582a'/%3E%3Cg stroke='%23f3e7cc' stroke-width='9' fill='none' stroke-linecap='round'%3E%3Ccircle cx='50' cy='50' r='30'/%3E%3Cpath d='M50 20v60M50 50L29 71M50 50l21 21'/%3E%3C/g%3E%3C/svg%3E" />
+</head>
+<body>
+
+  <!-- Nav -->
+  <header class="nav" id="nav">
+    <a class="brand" href="#topo">
+      <svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#art-peace" /></svg>
+      <span class="brand-name">Awards</span>
+      <span class="brand-tag">Uma experiência Revival</span>
+    </a>
+    <nav class="nav-links" aria-label="Seções">
+      <a href="#ato-1">Relembre</a>
+      <a href="#categorias">Categorias</a>
+      <a href="#votar">Votar</a>
+    </nav>
+    <a class="btn btn-pill btn-sm" href="#votar">Quero votar</a>
+  </header>
+
+  <main id="topo">
+
+    <!-- Hero -->
+    <section class="hero">
+      <svg class="hero-sun" viewBox="0 0 800 800" aria-hidden="true"><use href="#art-sunburst" /></svg>
+      <div class="hero-inner">
+        <p class="eyebrow">Awards 2026 · Rewind</p>
+        <h1 class="display">
+          <span class="wobble">Rewind</span>
+          <span class="wobble wobble-2">Awards</span>
+          <span class="display-sm">a votação!</span>
+        </h1>
+        <p class="lede">Do mais engraçado ao mais pentecostal, nomeie os indicados de cada categoria.</p>
+        <div class="hero-cta">
+          <a class="btn btn-pill" href="#votar">Começar a votar</a>
+          <a class="btn btn-ghost" href="#categorias">Ver categorias</a>
+        </div>
+      </div>
+      <a class="scroll-hint" href="#ato-1">awards · indique candidatos até 06/10</a>
+    </section>
+
+    <!-- Ticker -->
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker-track">
+        <span>shey</span><i>✿</i><span>amor</span><i>☮</i><span>performance</span><i>✺</i><span>dynamus</span><i>✿</i><span>indique, vote</span><i>☮</i><span>musga, profecia e tendel</span><i>✺</i>
+        <span>shey</span><i>✿</i><span>amor</span><i>☮</i><span>performance</span><i>✺</i><span>dynamus</span><i>✿</i><span>indique, vote</span><i>☮</i><span>musga, profecia e tendel</span><i>✺</i>
+      </div>
+    </div>
+
+    <!-- Ato I -->
+    <section class="act act-1" id="ato-1">
+      <h2 class="headline reveal">Foram <span class="big-num" data-tick="365">365</span> dias de histórias.</h2>
+      <p class="sub reveal">Indique aqueles que protagonizaram estes momentos!</p>
+      <div class="tiles reveal">
+        <div class="tile t-orange"><svg viewBox="0 0 100 100"><use href="#art-peace" /></svg></div>
+        <div class="tile t-blue"><svg viewBox="0 0 100 100"><use href="#art-peace" /></svg></div>
+        <div class="tile t-mustard"><svg viewBox="0 0 200 200"><use href="#art-flower" /></svg></div>
+        <div class="tile t-red"><svg viewBox="0 0 100 100"><use href="#art-peace" /></svg></div>
+        <div class="tile t-green"><svg viewBox="0 0 200 200"><use href="#art-flower" /></svg></div>
+        <div class="tile t-teal"><svg viewBox="0 0 100 100"><use href="#art-peace" /></svg></div>
+      </div>
+    </section>
+
+    <!-- Transições -->
+    <section class="transitions">
+      <svg class="welcome-bg" viewBox="0 0 800 800" aria-hidden="true"><use href="#art-sunburst" /></svg>
+      <p class="t-line t-big reveal">Bem-vindo ao <span class="groovy">Rewind Awards.</span></p>
+    </section>
+
+    <!-- Categorias -->
+    <section class="act act-cats" id="categorias">
+      <ul class="cat-grid" id="cat-grid"></ul>
+    </section>
+
+    <!-- Votação -->
+    <section class="act act-vote" id="votar">
+
+      <div class="booth" id="booth">
+        <svg class="booth-bg" viewBox="0 0 800 800" aria-hidden="true"><use href="#art-sunburst" /></svg>
+
+        <!-- Passo: identificação -->
+        <form class="card card-id" id="step-id" autocomplete="on">
+          <p class="card-kicker">Antes de tudo</p>
+          <h3 class="card-title">Quem está votando?</h3>
+          <label class="field">
+            <span>Seu nome</span>
+            <input type="text" name="nome" id="in-nome" required maxlength="80" placeholder="Seu nome" />
+          </label>
+          <label class="field">
+            <span>E-mail <small>(uma resposta por e-mail)</small></span>
+            <input type="email" name="email" id="in-email" required maxlength="120" placeholder="voce@exemplo.com" />
+          </label>
+          <button class="btn btn-pill" type="submit">Abrir a urna</button>
+        </form>
+
+        <!-- Passo: pergunta -->
+        <div class="card card-q" id="step-q" hidden>
+          <div class="q-top">
+            <p class="card-kicker" id="q-count">Categoria 1 de 1</p>
+            <div class="q-bar"><span id="q-bar-fill"></span></div>
+          </div>
+          <h3 class="card-title" id="q-title">Categoria</h3>
+          <p class="q-desc" id="q-desc"></p>
+          <div class="options" id="q-options" role="radiogroup"></div>
+          <div class="q-nav">
+            <button class="btn btn-ghost" type="button" id="q-prev">Voltar</button>
+            <button class="btn btn-link" type="button" id="q-skip" hidden>Pular</button>
+            <button class="btn btn-pill" type="button" id="q-next" disabled>Próxima</button>
+          </div>
+        </div>
+
+        <!-- Passo: revisão -->
+        <div class="card card-review" id="step-review" hidden>
+          <p class="card-kicker">Último olhar</p>
+          <h3 class="card-title">Suas indicações:</h3>
+          <ol class="review-list" id="review-list"></ol>
+          <div class="q-nav">
+            <button class="btn btn-ghost" type="button" id="r-back">Mudar algo</button>
+            <button class="btn btn-pill" type="button" id="r-send">Enviar indicações</button>
+          </div>
+          <p class="form-msg" id="send-msg" role="status"></p>
+        </div>
+
+        <!-- Passo: obrigado -->
+        <div class="card card-done" id="step-done" hidden>
+          <svg class="done-art" viewBox="0 0 200 200" aria-hidden="true"><use href="#art-flower" /></svg>
+          <h3 class="card-title">Voto plantado.</h3>
+          <p>Obrigado por votar, <strong id="done-name"></strong>. Agora é só deixar florescer.</p>
+          <a class="btn btn-ghost" href="#topo">Voltar ao topo</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Fecho -->
+    <section class="closing">
+      <svg class="closing-wave" viewBox="0 0 400 300" aria-hidden="true"><use href="#art-wave" /></svg>
+      <p class="eyebrow">Ezequiel 37:1-14</p>
+      <h2 class="display closing-title"><span class="wobble">Fire,</span> <span class="wobble wobble-2">Revival</span> <span class="display-sm">e um comissionamento.</span></h2>
+      <a class="btn btn-pill" href="#votar">Votar agora</a>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="foot-cols">
+      <div>
+        <p class="brand-name">Rewind Awards</p>
+        <p class="foot-small">Site de votação feito à mão, com arte e tipografia próprias.</p>
+      </div>
+      <div>
+        <p class="foot-h">Navegar</p>
+        <a href="#categorias">Categorias</a>
+        <a href="#votar">Votar</a>
+      </div>
+      <div>
+        <p class="foot-h">Sobre os votos</p>
+        <p class="foot-small">Votação aberta a todos, com uma resposta por e-mail. As indicações vão para o formulário da organização.</p>
+      </div>
+    </div>
+    <p class="foot-bottom">© 2026 Revival Renz · Empowered by The Holy Spirit.</p>
+  </footer>
+
+  <!-- Biblioteca de artes próprias (SVG) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <!-- Símbolo da paz (domínio público), traço levemente irregular -->
+      <symbol id="art-peace" viewBox="0 0 100 100">
+        <g fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M50 8 C74 7 92 26 92 50 C93 74 73 92 50 92 C26 93 8 73 8 50 C7 27 27 8 50 8 Z" />
+          <path d="M50 9 L50 91" />
+          <path d="M50 52 L21 79" />
+          <path d="M50 52 L79 79" />
+        </g>
+      </symbol>
+
+      <!-- Flor de oito pétalas -->
+      <symbol id="art-flower" viewBox="0 0 200 200">
+        <g class="petals">
+          <path d="M100 100 C80 60 80 20 100 12 C120 20 120 60 100 100Z" />
+          <path d="M100 100 C80 60 80 20 100 12 C120 20 120 60 100 100Z" transform="rotate(45 100 100)" />
+          <path d="M100 100 C80 60 80 20 100 12 C120 20 120 60 100 100Z" transform="rotate(90 100 100)" />
+          <path d="M100 100 C80 60 80 20 100 12 C120 20 120 60 100 100Z" transform="rotate(135 100 100)" />
+          <path d="M100 100 C80 60 80 20 100 12 C120 20 120 60 100 100Z" transform="rotate(180 100 100)" />
+          <path d="M100 100 C80 60 80 20 100 12 C120 20 120 60 100 100Z" transform="rotate(225 100 100)" />
+          <path d="M100 100 C80 60 80 20 100 12 C120 20 120 60 100 100Z" transform="rotate(270 100 100)" />
+          <path d="M100 100 C80 60 80 20 100 12 C120 20 120 60 100 100Z" transform="rotate(315 100 100)" />
+        </g>
+        <circle cx="100" cy="100" r="26" class="flower-core" />
+        <circle cx="100" cy="100" r="12" class="flower-dot" />
+      </symbol>
+
+      <!-- Raios de sol (sunburst) -->
+      <symbol id="art-sunburst" viewBox="0 0 800 800">
+        <g transform="translate(400 400)">
+          <path d="M0 0 L-60 -420 L60 -420Z" fill="#e8582a" />
+          <path d="M0 0 L-60 -420 L60 -420Z" fill="#e3a72f" transform="rotate(20)" />
+          <path d="M0 0 L-60 -420 L60 -420Z" fill="#2a8c9a" transform="rotate(40)" />
+          <path d="M0 0 L-60 -420 L60 -420Z" fill="#c8312a" transform="rotate(60)" />
+          <path d="M0 0 L-60 -420 L60 -420Z" fill="#7a9a3a" transform="rotate(80)" />
+          <path d="M0 0 L-60 -420 L60 -420Z" fill="#5a2d5e" transform="rotate(100)" />
+          <path d="M0 0 L-60 -420 L60 -420Z" fill="#e8582a" transform="rotate(120)" />
+          <path d="M0 0 L-60 -420 L60 -420Z" fill="#e3a72f" transform="rotate(140)" />
+          <path d="M0 0 L-60 -420 L60 -420Z" fill="#2a8c9a" transform="rotate(160)" />
+          <path d="M0 0 L-60 -420 L60 -420Z" fill="#c8312a" transform="rotate(180)" />
+          <path d="M0 0 L-60 -420 L60 -420Z" fill="#7a9a3a" transform="rotate(200)" />
+          <path d="M0 0 L-60 -420 L60 -420Z" fill="#5a2d5e" transform="rotate(220)" />
+          <path d="M0 0 L-60 -420 L60 -420Z" fill="#e8582a" transform="rotate(240)" />
+          <path d="M0 0 L-60 -420 L60 -420Z" fill="#e3a72f" transform="rotate(260)" />
+          <path d="M0 0 L-60 -420 L60 -420Z" fill="#2a8c9a" transform="rotate(280)" />
+          <path d="M0 0 L-60 -420 L60 -420Z" fill="#c8312a" transform="rotate(300)" />
+          <path d="M0 0 L-60 -420 L60 -420Z" fill="#7a9a3a" transform="rotate(320)" />
+          <path d="M0 0 L-60 -420 L60 -420Z" fill="#5a2d5e" transform="rotate(340)" />
+        </g>
+      </symbol>
+
+      <!-- Onda com sol de gotas -->
+      <symbol id="art-wave" viewBox="0 0 400 300">
+        <circle cx="110" cy="100" r="62" fill="#e3a72f" />
+        <g fill="#c8312a">
+          <circle cx="40" cy="40" r="14" /><circle cx="190" cy="34" r="11" /><circle cx="210" cy="120" r="9" />
+          <ellipse cx="30" cy="150" rx="16" ry="10" /><circle cx="250" cy="70" r="7" /><circle cx="330" cy="40" r="13" />
+        </g>
+        <path d="M0 210 C70 150 150 150 220 190 C260 120 330 100 400 150 L400 300 L0 300Z" fill="#2a8c9a" stroke="#2b1a10" stroke-width="5" />
+        <path d="M0 250 C80 200 170 210 250 240 C300 200 350 195 400 210 L400 300 L0 300Z" fill="#3a6fb5" stroke="#2b1a10" stroke-width="5" />
+        <path d="M220 190 C232 168 250 160 268 168 C254 172 248 184 256 192" fill="#f3e7cc" stroke="#2b1a10" stroke-width="5" stroke-linejoin="round" />
+      </symbol>
+
+      <!-- Chama: ruído que sobe sem parar e ondula as letras como calor de fogo -->
+      <filter id="flame" filterUnits="userSpaceOnUse" x="-60" y="-260" width="3200" height="900" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.0125 0.025" numOctaves="2" seed="11" stitchTiles="stitch" x="0" y="0" width="240" height="240" result="noise" />
+        <feTile in="noise" result="tiled" />
+        <feOffset in="tiled" dx="0" dy="0" result="rising">
+          <animate attributeName="dy" from="0" to="-240" dur="6s" repeatCount="indefinite" />
+        </feOffset>
+        <feDisplacementMap in="SourceGraphic" in2="rising" scale="16" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </defs>
+  </svg>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
