@@ -32,24 +32,21 @@
   }, { passive: true });
 
   /* ---------- Letras em chama ----------
-     Cada palavra desenhada vira um SVG com filtro próprio, do tamanho da palavra:
-     o ruído sobe em loop e ondula as letras. O brilho é estático (sombra do texto
-     por trás), e só anima o que está na tela, para rodar leve no celular. */
-  const SVGNS = "http://www.w3.org/2000/svg";
-  const TW = 320, TH = 80; // múltiplos do período do ruído, para o loop emendar
+     Cada palavra desenhada é pintada num <canvas> e redesenhada em fatias horizontais
+     que ondulam subindo, como o ar quente de uma fogueira. Canvas funciona igual em
+     todos os navegadores (inclusive Safari do iPhone) e só anima o que está na tela. */
   const flameEls = [...document.querySelectorAll(".wobble, .groovy")];
   flameEls.forEach((el) => { el.dataset.txt = el.textContent; el.setAttribute("aria-label", el.textContent); });
-
-  const LEVE = matchMedia("(hover: none)").matches; // celular: ruído mais simples
-  let nFiltro = 0;
+  let chamas = [];
   const visiveis = new IntersectionObserver((es) => es.forEach((e) => {
-    const svg = e.target;
-    if (svg.pauseAnimations) e.isIntersecting ? svg.unpauseAnimations() : svg.pauseAnimations();
-  }), { rootMargin: "0px" });
+    const ch = chamas.find((c) => c.cv === e.target);
+    if (ch) ch.ativa = e.isIntersecting;
+  }));
 
   function flameify() {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    visiveis.disconnect();
+    visiveis.disconnect(); chamas = [];
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     flameEls.forEach((el) => {
       el.textContent = "";
       const wraps = [];
@@ -68,46 +65,60 @@
       });
       const cs = getComputedStyle(el);
       const contorno = parseFloat(cs.webkitTextStrokeWidth) || 0;
+      const fonte = cs.fontStyle + " " + cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
       wraps.forEach(([w, marca, p]) => {
         const r = w.getBoundingClientRect();
-        const W = Math.ceil(r.width), H = Math.ceil(r.height);
-        const base = marca.getBoundingClientRect().top - r.top;
-        const id = "fl" + (++nFiltro);
-        const fh = Math.max(H + 36, 2 * TH + 20);
-        const svg = document.createElementNS(SVGNS, "svg");
-        svg.setAttribute("width", W); svg.setAttribute("height", H);
-        svg.setAttribute("aria-hidden", "true");
-        svg.innerHTML =
-          `<defs><filter id="${id}" filterUnits="userSpaceOnUse" x="-14" y="-18" width="${W + 28}" height="${fh}" color-interpolation-filters="sRGB">` +
-          `<feTurbulence type="fractalNoise" baseFrequency="0.0125 0.025" numOctaves="${LEVE ? 1 : 2}" seed="11" stitchTiles="stitch" x="0" y="0" width="${TW}" height="${TH}" result="n"/>` +
-          `<feTile in="n" result="t"/>` +
-          `<feOffset in="t" dx="0" dy="0" x="0" y="0" width="${TW}" height="${TH}" result="o">` +
-          `<animate attributeName="dy" from="0" to="-${TH}" dur="2s" repeatCount="indefinite"/></feOffset>` +
-          `<feTile in="o" result="t2"/>` +
-          `<feDisplacementMap in="SourceGraphic" in2="t2" scale="16" xChannelSelector="R" yChannelSelector="G"/>` +
-          `</filter></defs>`;
-        const tx = document.createElementNS(SVGNS, "text");
-        tx.setAttribute("x", "0"); tx.setAttribute("y", String(base));
-        tx.setAttribute("filter", `url(#${id})`);
-        tx.textContent = p;
-        tx.style.font = cs.fontStyle + " " + cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
-        tx.style.letterSpacing = cs.letterSpacing;
-        tx.style.fill = cs.color;
+        const PAD = 16;
+        const W = Math.ceil(r.width) + PAD * 2, H = Math.ceil(r.height) + PAD;
+        const base = marca.getBoundingClientRect().top - r.top + PAD / 2;
+        // texto parado, desenhado uma vez
+        const src = document.createElement("canvas");
+        src.width = W * dpr; src.height = H * dpr;
+        const sx = src.getContext("2d");
+        sx.scale(dpr, dpr);
+        sx.font = fonte; sx.textBaseline = "alphabetic";
+        if ("letterSpacing" in sx) sx.letterSpacing = cs.letterSpacing;
         if (contorno) {
-          tx.style.stroke = cs.webkitTextStrokeColor;
-          tx.style.strokeWidth = contorno * 2 + "px";
-          tx.style.paintOrder = "stroke fill";
-          tx.style.strokeLinejoin = "round";
+          sx.lineJoin = "round"; sx.lineWidth = contorno * 2; sx.strokeStyle = cs.webkitTextStrokeColor;
+          sx.strokeText(p, PAD, base);
         }
-        svg.appendChild(tx);
-        w.appendChild(svg);
-        visiveis.observe(svg);
+        sx.fillStyle = cs.color; sx.fillText(p, PAD, base);
+        // canvas visível, onde a chama é desenhada
+        const cv = document.createElement("canvas");
+        cv.width = W * dpr; cv.height = H * dpr;
+        cv.style.cssText = `position:absolute;left:${-PAD}px;top:${-PAD / 2}px;width:${W}px;height:${H}px;pointer-events:none`;
+        cv.setAttribute("aria-hidden", "true");
+        w.appendChild(cv);
+        const ch = { cv, ctx: cv.getContext("2d"), src, W, H, dpr, ativa: true, fase: Math.random() * 10 };
+        chamas.push(ch);
+        visiveis.observe(cv);
+        desenha(ch, 0);
       });
     });
   }
+
+  function desenha(ch, t) {
+    const { ctx, src, W, H, dpr } = ch;
+    const fatia = 2; // px de altura de cada faixa
+    ctx.clearRect(0, 0, W * dpr, H * dpr);
+    for (let y = 0; y < H; y += fatia) {
+      const topo = 1 - y / H; // mais movimento no alto, como chama
+      const k = ch.fase + t;
+      const dx = (Math.sin(y * 0.09 + k * 2.2) * 0.6 + Math.sin(y * 0.21 + k * 3.7) * 0.4) * (2 + 4 * topo);
+      ctx.drawImage(src, 0, y * dpr, W * dpr, fatia * dpr, dx * dpr, y * dpr, W * dpr, fatia * dpr);
+    }
+  }
+
+  let t0 = performance.now();
+  (function loop(now) {
+    const t = (now - t0) / 1000 * 0.6; // velocidade calma
+    for (const ch of chamas) if (ch.ativa) desenha(ch, t);
+    requestAnimationFrame(loop);
+  })(t0);
+
   const iniciarChama = () => {
     try { flameify(); }
-    catch (_) { flameEls.forEach((el) => { el.textContent = el.dataset.txt; }); }
+    catch (_) { chamas = []; flameEls.forEach((el) => { el.textContent = el.dataset.txt; }); }
   };
   (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(iniciarChama);
   let largura = innerWidth, tmr;
