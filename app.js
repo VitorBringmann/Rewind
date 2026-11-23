@@ -83,6 +83,11 @@
           sx.strokeText(p, PAD, base);
         }
         sx.fillStyle = cs.color; sx.fillText(p, PAD, base);
+        // confere se o texto foi mesmo desenhado; se não, mantém o texto normal
+        const amostra = sx.getImageData(0, 0, src.width, src.height).data;
+        let pintou = false;
+        for (let i = 3; i < amostra.length; i += 64) if (amostra[i] > 0) { pintou = true; break; }
+        if (!pintou) throw new Error("canvas vazio");
         // canvas visível, onde a chama é desenhada
         const cv = document.createElement("canvas");
         cv.width = W * dpr; cv.height = H * dpr;
