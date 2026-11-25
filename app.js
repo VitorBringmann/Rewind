@@ -179,8 +179,21 @@
       li.style.setProperty("--c", COLORS[n % COLORS.length]);
       li.innerHTML = `<span class="cat-n">${String(n + 1).padStart(2, "0")}</span>
         <p class="cat-name"></p>
-        <svg viewBox="${n % 2 ? "0 0 100 100" : "0 0 200 200"}"><use href="${n % 2 ? "#art-peace" : "#art-flower"}"/></svg>`;
+        <svg viewBox="${n % 2 ? "0 0 100 100" : "0 0 200 200"}"><use href="${n % 2 ? "#art-peace" : "#art-flower"}"/></svg>
+        <div class="cat-back" aria-hidden="true"><span class="cat-n"></span><p class="cat-desc"></p><span class="cat-hint">toque para voltar</span></div>`;
       $(".cat-name", li).textContent = c.categoria;
+      $(".cat-back .cat-n", li).textContent = c.categoria;
+      $(".cat-desc", li).textContent = (c.descricao || "").trim() || "Indique quem mais marcou esta categoria na temporada.";
+      li.tabIndex = 0;
+      li.setAttribute("role", "button");
+      li.setAttribute("aria-expanded", "false");
+      const virar = () => {
+        const aberto = li.classList.toggle("open");
+        li.setAttribute("aria-expanded", String(aberto));
+        $(".cat-back", li).setAttribute("aria-hidden", String(!aberto));
+      };
+      li.addEventListener("click", virar);
+      li.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); virar(); } });
       grid.appendChild(li);
     });
     document.querySelectorAll('[data-count="categorias"]').forEach((el) => (el.textContent = state.cats.length));
